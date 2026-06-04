@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Calculadora de Horas</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f2f2f7;min-height:100vh;padding:16px 14px 40px;}
+h1{font-size:19px;font-weight:700;color:#1c1c1e;margin-bottom:16px;display:flex;align-items:center;gap:8px;}
+
+/* FILAS */
+.rows-wrap{display:flex;flex-direction:column;gap:9px;margin-bottom:12px;}
+.trow{background:#fff;border-radius:14px;padding:10px 12px;display:flex;align-items:center;gap:8px;box-shadow:0 1px 3px rgba(0,0,0,0.07);}
+.op-btn{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:600;cursor:pointer;border:none;flex-shrink:0;-webkit-tap-highlight-color:transparent;}
+.op-btn.plus{background:#d1f5e8;color:#0a7a55;}
+.op-btn.minus{background:#fde8e0;color:#a0391a;}
+.time-display{flex:1;display:flex;align-items:center;justify-content:center;background:#f2f2f7;border-radius:10px;padding:6px 10px;cursor:pointer;border:2px solid transparent;transition:border-color 0.15s;}
+.time-display.selected{border-color:#007aff;background:#e8f0fe;}
+.time-display span{font-size:28px;font-weight:700;letter-spacing:1px;color:#1c1c1e;font-variant-numeric:tabular-nums;}
+.time-display.selected span{color:#0055cc;}
+.time-colon{font-size:26px;font-weight:400;color:#8e8e93;margin:0 4px;}
+.del-btn{width:32px;height:32px;border-radius:50%;background:#f2f2f7;border:none;color:#8e8e93;font-size:17px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;}
+.base-lbl{font-size:11px;color:#aeaeb2;min-width:38px;text-align:center;flex-shrink:0;}
+
+/* SELECTOR ACTIVO */
+.active-hint{text-align:center;font-size:13px;color:#007aff;margin-bottom:10px;height:18px;font-weight:500;}
+
+/* TECLADO NUMERICO */
+.keypad{background:#fff;border-radius:16px;padding:12px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,0.07);}
+.keypad-label{font-size:12px;color:#8e8e93;text-align:center;margin-bottom:10px;}
+.keypad-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.key{height:54px;border-radius:12px;border:none;background:#f2f2f7;font-size:22px;font-weight:500;color:#1c1c1e;cursor:pointer;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none;}
+.key:active{background:#d1d1d6;}
+.key.key-0{grid-column:span 2;}
+.key.key-del{background:#fde8e0;color:#a0391a;font-size:18px;}
+.key.key-del:active{background:#f9c4b0;}
+
+/* BOTONES */
+.add-btn{width:100%;padding:13px;border:1.5px dashed #c7c7cc;border-radius:14px;background:none;color:#636366;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:12px;-webkit-tap-highlight-color:transparent;}
+.add-btn:active{background:#e5e5ea;}
+
+/* RESULTADO */
+.res-card{background:#fff;border-radius:14px;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,0.07);}
+.res-lbl{font-size:13px;color:#8e8e93;margin-bottom:2px;}
+.res-val{font-size:44px;font-weight:700;color:#1c1c1e;letter-spacing:-1.5px;font-variant-numeric:tabular-nums;}
+.res-sub{font-size:12px;color:#aeaeb2;margin-top:2px;}
+.neg{color:#d84315!important;}
+
+.clr-btn{width:100%;padding:13px;border:1px solid #c7c7cc;border-radius:14px;background:none;color:#636366;font-size:15px;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+.clr-btn:active{background:#e5e5ea;}
+</style>
+</head>
+<body>
+
+<h1>⏱ CALCULADORA DE HORAS⏱️</h1>
+
+<div class="rows-wrap" id="rows-wrap"></div>
+<div class="active-hint" id="active-hint"></div>
+
+<div class="keypad" id="keypad">
+  <div class="keypad-label" id="keypad-label">Toca una fila para editar</div>
+  <div class="keypad-grid">
+    <button class="key" data-k="1">1</button>
+    <button class="key" data-k="2">2</button>
+    <button class="key" data-k="3">3</button>
+    <button class="key" data-k="4">4</button>
+    <button class="key" data-k="5">5</button>
+    <button class="key" data-k="6">6</button>
+    <button class="key" data-k="7">7</button>
+    <button class="key" data-k="8">8</button>
+    <button class="key" data-k="9">9</button>
+    <button class="key key-0" data-k="0">0</button>
+    <button class="key key-del" data-k="del">⌫</button>
+  </div>
+</div>
+
+<button class="add-btn" id="add-btn">＋ Añadir fila</button>
+
+<div class="res-card">
+  <div>
+    <div class="res-lbl">Resultado</div>
+    <div class="res-val" id="res-val">00:00</div>
+    <div class="res-sub" id="res-sub"></div>
+  </div>
+  <span style="font-size:36px;color:#c7c7cc;">∑</span>
+</div>
+
+<button class="clr-btn" id="clr-btn">↺ Reiniciar</button>
+
+<script>
+var rows = [
+  {id:1, op:'plus', h:0, m:0},
+  {id:2, op:'plus', h:0, m:0}
+];
+var nid = 3;
+var sel = null; // {rowId, field:'h'|'m'}
+
+function p2(n){ return String(Math.abs(Math.floor(n))).padStart(2,'0'); }
+
+function calcResult(){
+  var tot = 0;
+  rows.forEach(function(r){ var v = r.h*60+r.m; tot += r.op==='plus' ? v : -v; });
+  var neg = tot<0, abs = Math.abs(tot), h = Math.floor(abs/60), m = abs%60;
+  var rv = document.getElementById('res-val');
+  rv.textContent = (neg?'-':'') + p2(h) + ':' + p2(m);
+  rv.className = 'res-val' + (neg?' neg':'');
+  document.getElementById('res-sub').textContent = abs>=60 ? (neg?'-':'') + abs + ' min en total' : '';
+}
+
+function updateHint(){
+  var hint = document.getElementById('active-hint');
+  var lbl  = document.getElementById('keypad-label');
+  if(!sel){ hint.textContent=''; lbl.textContent='Toca HH o MM de una fila para editar'; return; }
+  var row = rows.find(function(r){ return r.id===sel.rowId; });
+  var which = sel.field==='h' ? 'Horas (HH)' : 'Minutos (MM)';
+  hint.textContent = 'Editando fila '+(rows.indexOf(row)+1)+' — '+which;
+  lbl.textContent  = 'Escribe el valor para '+which;
+}
+
+function selectField(rowId, field){
+  sel = {rowId:rowId, field:field, buf:''};
+  renderHighlight();
+  updateHint();
+}
+
+function renderHighlight(){
+  document.querySelectorAll('.time-display').forEach(function(el){
+    el.classList.remove('selected');
+  });
+  if(!sel) return;
+  var el = document.querySelector('.time-display[data-id="'+sel.rowId+'"][data-field="'+sel.field+'"]');
+  if(el) el.classList.add('selected');
+}
+
+function pressKey(k){
+  if(!sel) return;
+  var row = rows.find(function(r){ return r.id===sel.rowId; });
+  if(!row) return;
+  var maxVal = sel.field==='h' ? 99 : 59;
+  var maxLen = 2;
+
+  if(k==='del'){
+    if(!sel.buf) sel.buf='';
+    sel.buf = sel.buf.slice(0,-1);
+    row[sel.field] = sel.buf==='' ? 0 : Math.min(parseInt(sel.buf)||0, maxVal);
+  } else {
+    if(!sel.buf) sel.buf='';
+    sel.buf = (sel.buf + k).slice(-2);
+    var val = parseInt(sel.buf)||0;
+    if(val > maxVal){ sel.buf = String(maxVal); val = maxVal; }
+    row[sel.field] = val;
+    // auto-advance
+    if(sel.buf.length >= maxLen){
+      var fields = [];
+      rows.forEach(function(r){ fields.push({rowId:r.id,field:'h'}); fields.push({rowId:r.id,field:'m'}); });
+      var cur = fields.findIndex(function(f){ return f.rowId===sel.rowId && f.field===sel.field; });
+      if(cur >= 0 && cur < fields.length-1){
+        var next = fields[cur+1];
+        sel = {rowId:next.rowId, field:next.field, buf:''};
+      }
+    }
+  }
+
+  renderAll();
+  renderHighlight();
+  updateHint();
+  calcResult();
+}
+
+function renderAll(){
+  var wrap = document.getElementById('rows-wrap');
+  wrap.innerHTML = '';
+  rows.forEach(function(row, idx){
+    var div = document.createElement('div');
+    div.className = 'trow';
+
+    if(idx===0){
+      var lbl = document.createElement('span');
+      lbl.className = 'base-lbl'; lbl.textContent = 'Base';
+      div.appendChild(lbl);
+    } else {
+      var op = document.createElement('button');
+      op.className = 'op-btn '+row.op;
+      op.textContent = row.op==='plus' ? '+' : '−';
+      (function(r){ op.addEventListener('click', function(){
+        r.op = r.op==='plus' ? 'minus' : 'plus';
+        renderAll(); calcResult();
+      }); })(row);
+      div.appendChild(op);
+    }
+
+    // HH display
+    var dH = document.createElement('div');
+    dH.className = 'time-display' + (sel&&sel.rowId===row.id&&sel.field==='h'?' selected':'');
+    dH.dataset.id = row.id; dH.dataset.field = 'h';
+    var sH = document.createElement('span');
+    sH.textContent = p2(row.h);
+    dH.appendChild(sH);
+    var subLH = document.createElement('div');
+    subLH.style.cssText='font-size:9px;color:#8e8e93;text-align:center;letter-spacing:0.05em;margin-top:1px;';
+    subLH.textContent='HH';
+    dH.appendChild(subLH);
+    dH.style.flexDirection='column';
+    (function(id){ dH.addEventListener('click', function(){ selectField(id,'h'); }); })(row.id);
+
+    var col = document.createElement('span');
+    col.className = 'time-colon'; col.textContent = ':';
+
+    // MM display
+    var dM = document.createElement('div');
+    dM.className = 'time-display' + (sel&&sel.rowId===row.id&&sel.field==='m'?' selected':'');
+    dM.dataset.id = row.id; dM.dataset.field = 'm';
+    var sM = document.createElement('span');
+    sM.textContent = p2(row.m);
+    dM.appendChild(sM);
+    var subLM = document.createElement('div');
+    subLM.style.cssText='font-size:9px;color:#8e8e93;text-align:center;letter-spacing:0.05em;margin-top:1px;';
+    subLM.textContent='MM';
+    dM.appendChild(subLM);
+    dM.style.flexDirection='column';
+    (function(id){ dM.addEventListener('click', function(){ selectField(id,'m'); }); })(row.id);
+
+    div.appendChild(dH);
+    div.appendChild(col);
+    div.appendChild(dM);
+
+    if(idx===0){
+      var sp = document.createElement('div'); sp.style.cssText='width:32px;flex-shrink:0;';
+      div.appendChild(sp);
+    } else {
+      var db = document.createElement('button');
+      db.className='del-btn'; db.textContent='✕';
+      db.setAttribute('aria-label','Eliminar fila');
+      (function(id){ db.addEventListener('click', function(){
+        rows = rows.filter(function(r){ return r.id!==id; });
+        if(sel && sel.rowId===id) sel=null;
+        renderAll(); calcResult(); updateHint();
+      }); })(row.id);
+      div.appendChild(db);
+    }
+
+    wrap.appendChild(div);
+  });
+}
+
+// keypad buttons
+document.querySelectorAll('.key').forEach(function(btn){
+  btn.addEventListener('click', function(){ pressKey(btn.dataset.k); });
+});
+
+document.getElementById('add-btn').addEventListener('click', function(){
+  var newId = nid++;
+  rows.push({id:newId, op:'plus', h:0, m:0});
+  renderAll(); calcResult();
+  setTimeout(function(){ selectField(newId,'h'); renderHighlight(); updateHint(); }, 50);
+});
+
+document.getElementById('clr-btn').addEventListener('click', function(){
+  rows=[{id:1,op:'plus',h:0,m:0},{id:2,op:'plus',h:0,m:0}];
+  nid=3; sel=null;
+  renderAll(); calcResult(); updateHint();
+});
+
+renderAll();
+calcResult();
+updateHint();
+</script>
+</body>
+</html>
